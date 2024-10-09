@@ -1,2 +1,2 @@
-make: src/main.cpp
-	g++ -o main.exe src/main.cpp
+make: src/main.cpp src/classes.h
+	g++ -o main.exe src/main.cpp src/classes.h
