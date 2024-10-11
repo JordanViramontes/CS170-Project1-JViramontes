@@ -8,11 +8,16 @@ Sources used for understanding the A* Search Algorithm:
 */
 
 #include <iostream>
+#include <fstream>
+
+#include "classes.cpp"
+
 using namespace std;
 
 int main() {
 
-    cout << "Hello!\n";
+    // UI ui;
+    Board b;
 
     return 0;
 }
