@@ -18,6 +18,9 @@ int main() {
 
     // UI ui;
     Board b;
+    b.move(2);
+    b.move(2);
+    b.move(2);
 
     return 0;
 }
