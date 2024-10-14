@@ -28,10 +28,17 @@ void Graph::printGraph() {
     printNodes(initBoard);
 }
 
-void Graph::ASearch(Board* b, int calc) {
-    initBoard->ASearch(calc);
+void Graph::ASearch(Board* b, int calc, int g) {
+    if (b->getVector() == b->getGoal()) return; // check if we've hit our goal
+
+    Board* temp = b->ASearch(calc);
+    
+    cout << "G: " << g << endl;
+    temp->printBoard();
+
+    ASearch(temp, calc, g+1);
 }
 
 void Graph::ASearch(int calc) {
-    ASearch(initBoard, calc);
+    ASearch(initBoard, calc, 1);
 }

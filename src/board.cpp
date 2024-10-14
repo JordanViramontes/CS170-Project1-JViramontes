@@ -54,7 +54,6 @@ void printVec(const vector<vector<int>> &v) {
 
 Board::Board() {
     size = 3;
-    searchType = 0;
     blanknum = 9;
 
     parent = nullptr;
@@ -66,6 +65,12 @@ Board::Board() {
     // printVec(board);
     // printVec(goal);
 };
+
+Board::Board(Board *p, const vector<vector<int>> &v) {
+    board = v;
+    p->getConstants(goal, size, blanknum);
+    parent = parent;
+}
 
 void Board::findPos(const vector<vector<int>> &v, int &pos1, int &pos2, int num) {
     //Find position of number
@@ -206,38 +211,32 @@ int Board::smallestTotal(double U, double D, double L, double R) {
     return 0; //default (should never happen)
 }
 
-int Board::ASearch(int calc) {
+Board* Board::ASearch(int calc) {
+    vector<vector<int>> tempVector = board;
+
     double hB = calculateH(board, calc);
-    int g = 1;
 
-    while (hB != 0) {
-        //current blank position
-        int pos1, pos2;
-        findPos(board, pos1, pos2, blanknum);
+    int pos1, pos2;
+    findPos(board, pos1, pos2, blanknum);
 
-        double hU = blanknum*blanknum, 
-            hD = blanknum*blanknum, 
-            hL = blanknum*blanknum, 
-            hR = blanknum*blanknum;
+    double hU = blanknum*blanknum, 
+        hD = blanknum*blanknum, 
+        hL = blanknum*blanknum, 
+        hR = blanknum*blanknum;
 
-        // Check possible 4 next states
-        if (isMoveValid(pos1, pos2, 0)) hU = calculateH(move(0), calc); //Up
-        if (isMoveValid(pos1, pos2, 1)) hD = calculateH(move(1), calc); //Down
-        if (isMoveValid(pos1, pos2, 2)) hL = calculateH(move(2), calc); //Left
-        if (isMoveValid(pos1, pos2, 3)) hR = calculateH(move(3), calc); //Right
+    // Check possible 4 next states
+    if (isMoveValid(pos1, pos2, 0)) hU = calculateH(move(0), calc); //Up
+    if (isMoveValid(pos1, pos2, 1)) hD = calculateH(move(1), calc); //Down
+    if (isMoveValid(pos1, pos2, 2)) hL = calculateH(move(2), calc); //Left
+    if (isMoveValid(pos1, pos2, 3)) hR = calculateH(move(3), calc); //Right
 
-        cout << "totals: " << hU << ", " << hD 
-            << ", " << hL << ", " << hR 
-            << "\tBoard: " << hB << ", G: " << g << endl;
+    cout << "totals: " << hU << ", " << hD 
+        << ", " << hL << ", " << hR 
+        << "\tBoard: " << hB << endl;
 
-        board = move(smallestTotal(hU, hD, hL, hR));
-        printVec(board);
+    tempVector = move(smallestTotal(hU, hD, hL, hR));
 
-        hB = calculateH(board, calc); //set hB with updated board
-        g++; //update G
-    }
-
-    return 0;
+    return new Board(this, tempVector);
 }
 
 void const Board::printBoard() {
