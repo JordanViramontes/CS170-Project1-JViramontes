@@ -230,9 +230,9 @@ Board* Board::ASearch(int calc) {
     if (isMoveValid(pos1, pos2, 2)) hL = calculateH(move(2), calc); //Left
     if (isMoveValid(pos1, pos2, 3)) hR = calculateH(move(3), calc); //Right
 
-    cout << "totals: " << hU << ", " << hD 
-        << ", " << hL << ", " << hR 
-        << "\tBoard: " << hB << endl;
+    // cout << "totals: " << hU << ", " << hD 
+    //     << ", " << hL << ", " << hR 
+    //     << "\tBoard: " << hB << endl;
 
     tempVector = move(smallestTotal(hU, hD, hL, hR));
 

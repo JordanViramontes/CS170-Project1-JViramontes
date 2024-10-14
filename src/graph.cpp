@@ -14,27 +14,28 @@ Graph::Graph() {
     allBoards.push_back(initBoard);
 }
 
-void Graph::printNodes(Board* b) {
+void Graph::printNodes(Board* b, int depth) {
     if (b == nullptr) return; //base case
     
     b->printBoard();
-    // for (int i = 0; i < b->children.size(); i++) {
-    //     printNodes(b->children.at(i));
-    // }
+    for (int i = 0; i < b->children.size(); i++) {
+        cout << "Depth: " << depth << endl;
+        printNodes(b->children.at(i), depth+1);
+    }
 }
 
 void Graph::printGraph() {
-    cout << "A" << endl;
-    printNodes(initBoard);
+    printNodes(initBoard, 0);
 }
 
 void Graph::ASearch(Board* b, int calc, int g) {
     if (b->getVector() == b->getGoal()) return; // check if we've hit our goal
 
     Board* temp = b->ASearch(calc);
-    
-    cout << "G: " << g << endl;
-    temp->printBoard();
+    b->children.push_back(temp);
+
+    // cout << "G: " << g << endl;
+    // temp->printBoard();
 
     ASearch(temp, calc, g+1);
 }

@@ -11,9 +11,6 @@ class Board {
         int size; //3x3 => size=9
         int blanknum;
 
-        Board* parent;
-        std::vector<Board*> children;
-
         void findPos(const std::vector<std::vector<int>> &, int &, int &, int); //return 2 ints that show location of blank, use as a helped
         bool isMoveValid(int, int, int); //check if move is valid
         double calculateH(const std::vector<std::vector<int>> &, int); //calculate h, int = type of calculations
@@ -25,7 +22,8 @@ class Board {
         Board(Board*, const std::vector<std::vector<int>> &v);
         
         Board* ASearch(int); //Search algorithm, 2nd argument is which type of A search
-        void addChild(Board*);
+        Board* parent;
+        std::vector<Board*> children;
 
         void const printBoard();
 
@@ -42,6 +40,10 @@ class Board {
         std::vector<std::vector<int>> const getGoal() {
             return goal;
         }
+        
+        std::vector<Board*> const getChildren() {
+            return children;
+        }
 };
 
 class Graph {
@@ -49,7 +51,7 @@ class Graph {
         std::vector<Board*> allBoards;
         Board* initBoard;
 
-        void printNodes(Board*);
+        void printNodes(Board*, int);
         void ASearch(Board*, int, int);
             
     public:

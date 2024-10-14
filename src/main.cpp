@@ -28,6 +28,8 @@ int main() {
     Graph g;
     g.printGraph();
     g.ASearch(0);
+
+    g.printGraph();
     // Board b;
     // b.ASearch(0);
 
