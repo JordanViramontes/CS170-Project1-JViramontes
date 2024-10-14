@@ -1,6 +1,6 @@
+#include <iostream>
 #include<vector>
 #include<fstream>
-#include <iostream>
 #include <string>
 #include <cmath>
 #include <algorithm>
@@ -50,32 +50,21 @@ void printVec(const vector<vector<int>> &v) {
     cout << endl;
 }
 
-// UI
-
-UI::UI() {
-    //default size is 3x3
-    size = 3;
-    board = Board(0, size);
-};
-
-
 // Board
 
 Board::Board() {
     size = 3;
     searchType = 0;
     blanknum = 9;
+
+    parent = nullptr;
     
     fillVec(goal, size);
     fillTestVec(board, size); //TODO: CHANGE TO REGULAR
     cout << "TODO: FIX DEFAULT CASE FOR BOARD" << endl;
 
-    printVec(board);
+    // printVec(board);
     // printVec(goal);
-};
-
-Board::Board(bool scramble, int size) {
-
 };
 
 void Board::findPos(const vector<vector<int>> &v, int &pos1, int &pos2, int num) {
@@ -218,9 +207,6 @@ int Board::smallestTotal(double U, double D, double L, double R) {
 }
 
 int Board::ASearch(int calc) {
-    vector<vector<vector<int>>> knownBoards; //list of boards already explored
-    knownBoards.push_back(board);
-
     double hB = calculateH(board, calc);
     int g = 1;
 
@@ -252,4 +238,14 @@ int Board::ASearch(int calc) {
     }
 
     return 0;
+}
+
+void const Board::printBoard() {
+    for (int i = 0; i < board.size(); i++) {
+        for (int j = 0; j < board.at(i).size(); j++) {
+            cout << board.at(i).at(j) << ", ";
+        }
+        cout << endl;
+    }
+    cout << endl;
 }

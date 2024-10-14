@@ -19,18 +19,17 @@ Source for double checking A* Search Algorithm answers:
 #include <iostream>
 #include <fstream>
 
-#include "classes.cpp"
+#include "board.cpp"
+#include "graph.cpp"
 
 using namespace std;
 
 int main() {
-
-    // UI ui;
-    Board b;
-    // b.move(2);
-    // b.move(2);
-    // b.move(2);
-    b.ASearch(0);
+    Graph g;
+    g.printGraph();
+    g.ASearch(0);
+    // Board b;
+    // b.ASearch(0);
 
     return 0;
 }
