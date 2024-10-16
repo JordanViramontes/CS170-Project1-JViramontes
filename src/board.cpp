@@ -25,19 +25,33 @@ void fillVec(vector<vector<int>> &v, int size) {
 
 void fillTestVec(vector<vector<int>> &v, int size) {
     fillVec(v, size);
-    cout << endl << "TODO: CHANGE BOARD FROM PRESET 123-489-765" << endl;
+    // cout << endl << "TODO: CHANGE BOARD FROM PRESET 123-489-765" << endl;
+
+    // v.at(0).at(0) = 1;
+    // v.at(0).at(1) = 2;
+    // v.at(0).at(2) = 3;
+
+    // v.at(1).at(0) = 4;
+    // v.at(1).at(1) = 8;
+    // v.at(1).at(2) = 9;
+
+    // v.at(2).at(0) = 7;
+    // v.at(2).at(1) = 6;
+    // v.at(2).at(2) = 5;
+
+    cout << endl << "TODO: CHANGE BOARD FROM PRESET 123-456-978" << endl;
 
     v.at(0).at(0) = 1;
     v.at(0).at(1) = 2;
     v.at(0).at(2) = 3;
 
     v.at(1).at(0) = 4;
-    v.at(1).at(1) = 8;
-    v.at(1).at(2) = 9;
+    v.at(1).at(1) = 5;
+    v.at(1).at(2) = 6;
 
-    v.at(2).at(0) = 7;
-    v.at(2).at(1) = 6;
-    v.at(2).at(2) = 5;
+    v.at(2).at(0) = 9;
+    v.at(2).at(1) = 7;
+    v.at(2).at(2) = 8;
 }
 
 void printVec(const vector<vector<int>> &v) {
@@ -55,6 +69,8 @@ void printVec(const vector<vector<int>> &v) {
 Board::Board() {
     size = 3;
     blanknum = 9;
+    h = 9.0;
+    depth = 0;
 
     parent = nullptr;
     
@@ -68,8 +84,8 @@ Board::Board() {
 
 Board::Board(Board *p, const vector<vector<int>> &v) {
     board = v;
-    p->getConstants(goal, size, blanknum);
-    parent = parent;
+    p->getConstants(goal, size, blanknum, depth);
+    parent = p;
 }
 
 void Board::findPos(const vector<vector<int>> &v, int &pos1, int &pos2, int num) {
@@ -203,6 +219,7 @@ double Board::calculateH(const vector<vector<int>> &v, int calc) {
 
 int Board::smallestTotal(double U, double D, double L, double R) {
     double temp = min(min(min(U, D), L), R);
+    h = temp;
     
     if (temp == U) return 0;
     if (temp == D) return 1;
@@ -237,6 +254,24 @@ Board* Board::ASearch(int calc) {
     tempVector = move(smallestTotal(hU, hD, hL, hR));
 
     return new Board(this, tempVector);
+}
+
+vector<Board*> Board::ASearchUniform() {
+    vector<Board*> temp;
+
+    int pos1, pos2;
+    findPos(board, pos1, pos2, blanknum);
+
+    // cout << "INIT: " << endl;
+    // printVec(board);
+
+    // Check possible 4 next states and push all possible ones
+    if (isMoveValid(pos1, pos2, 0)) temp.push_back(new Board(this, move(0))); //Up
+    if (isMoveValid(pos1, pos2, 1)) temp.push_back(new Board(this, move(1))); //Down
+    if (isMoveValid(pos1, pos2, 2)) temp.push_back(new Board(this, move(2))); //Left
+    if (isMoveValid(pos1, pos2, 3)) temp.push_back(new Board(this, move(3))); //Right
+    
+    return temp;
 }
 
 void const Board::printBoard() {

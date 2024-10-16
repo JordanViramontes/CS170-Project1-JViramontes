@@ -25,11 +25,11 @@ Source for double checking A* Search Algorithm answers:
 using namespace std;
 
 int main() {
-    Graph g;
+    Graph g(0);
+    // g.ASearch(0);
+    g.ASearch();
     g.printGraph();
-    g.ASearch(0);
-
-    g.printGraph();
+    // g.printGraph();
     // Board b;
     // b.ASearch(0);
 
