@@ -1,2 +1,2 @@
-make: src/main.cpp
-	g++ -o a.exe src/main.cpp
+make: src/main.cpp src/graph.cpp src/board.cpp 
+	g++ src/main.cpp -o a.exe 

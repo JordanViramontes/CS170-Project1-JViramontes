@@ -13,6 +13,9 @@ Sources used for learning and understanding the A* Search Algorithm:
 
 Source for double checking A* Search Algorithm answers:
 * https://deniz.co/8-puzzle-solver/
+
+Source for help with using sort() function with structs
+* https://stackoverflow.com/questions/1380463/how-do-i-sort-a-vector-of-custom-objects
 ---
 */
 
@@ -25,10 +28,13 @@ Source for double checking A* Search Algorithm answers:
 using namespace std;
 
 int main() {
-    Graph g(0);
+    Graph g(1);
     // g.ASearch(0);
     g.ASearch();
     g.printGraph();
+
+    // cout << "ALL: " << endl;
+    // g.printAllBoards();
     // g.printGraph();
     // Board b;
     // b.ASearch(0);

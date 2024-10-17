@@ -3,6 +3,26 @@
 #include <vector>
 #include <string>
 
+// mini for help when sorting moves (greedy)
+// had issue where H = 2 different moves
+struct moves {
+    public:
+        double value;
+        int move;
+
+        moves(double v, int m) {
+            value = v;
+            move = m;
+        }
+};
+
+struct compare {
+    inline bool operator() (const moves& struct1, const moves& struct2)
+    {
+        return (struct1.value < struct2.value);
+    }
+};
+
 class Board {
     private:
         std::vector<std::vector<int>> board; //current board
@@ -13,17 +33,19 @@ class Board {
         int blanknum;
         int depth;
 
+        void fillVec(std::vector<std::vector<int>> &, int);
         void findPos(const std::vector<std::vector<int>> &, int &, int &, int); //return 2 ints that show location of blank, use as a helped
         bool isMoveValid(int, int, int); //check if move is valid
-        double calculateH(const std::vector<std::vector<int>> &, int); //calculate h, int = type of calculations
-        int smallestTotal(double, double, double, double); //specificlaly for finding smallest total, returns the corresponding move
+        double calculateH(const std::vector<std::vector<int>> &, 
+                          const std::vector<std::vector<int>> &, int); //calculate h, int = type of calculations
+        std::vector<double> smallestTotal(double, double, double, double); //specificlaly for finding smallest total, returns the corresponding move
         std::vector<std::vector<int>> move(int); //make a move
-        
+        bool checkKnowns(std::vector<Board*> &, std::vector<std::vector<int>> &);
     public:
         Board(); //default constructor
-        Board(Board*, const std::vector<std::vector<int>> &v);
+        Board(Board*, const std::vector<std::vector<int>> &v, int);
         
-        Board* ASearch(int); //Search algorithm, 2nd argument is which type of A search
+        Board* ASearch(std::vector<Board*> &, int); //Search algorithm, 2nd argument is which type of A search
         std::vector<Board*> ASearchUniform();
         Board* parent;
         std::vector<Board*> children;
@@ -67,6 +89,7 @@ class Graph {
     private:
         std::vector<Board*> allBoards;
         Board* initBoard;
+        Board* finalBoard;
         int calc;
 
         void printGraph(Board*, int);
@@ -79,5 +102,6 @@ class Graph {
         Graph();
         Graph(int);
         void printGraph();
+        void printAllBoards();
         void ASearch();
 };

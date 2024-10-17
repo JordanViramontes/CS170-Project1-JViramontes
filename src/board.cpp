@@ -10,7 +10,7 @@
 using namespace std;
 
 // additional helper functions
-void fillVec(vector<vector<int>> &v, int size) {
+void Board::fillVec(vector<vector<int>> &v, int size) {
     int cnt = 1;
 
     for (int i = 0; i < size; i++) {
@@ -24,34 +24,47 @@ void fillVec(vector<vector<int>> &v, int size) {
 }
 
 void fillTestVec(vector<vector<int>> &v, int size) {
-    fillVec(v, size);
-    // cout << endl << "TODO: CHANGE BOARD FROM PRESET 123-489-765" << endl;
+    int cnt = 1;
+    for (int i = 0; i < size; i++) {
+        vector<int> tmp;
+        for (int j = 0; j < size; j++) {
+            tmp.push_back(cnt);
+            cnt++;
+        }
+        v.push_back(tmp);
+    }
 
-    // v.at(0).at(0) = 1;
-    // v.at(0).at(1) = 2;
-    // v.at(0).at(2) = 3;
+    bool a = true;
+    if (a) {
+        cout << endl << "TODO: CHANGE BOARD FROM PRESET 123-489-765" << endl;
 
-    // v.at(1).at(0) = 4;
-    // v.at(1).at(1) = 8;
-    // v.at(1).at(2) = 9;
+        v.at(0).at(0) = 1;
+        v.at(0).at(1) = 2;
+        v.at(0).at(2) = 3;
 
-    // v.at(2).at(0) = 7;
-    // v.at(2).at(1) = 6;
-    // v.at(2).at(2) = 5;
+        v.at(1).at(0) = 4;
+        v.at(1).at(1) = 8;
+        v.at(1).at(2) = 9;
 
-    cout << endl << "TODO: CHANGE BOARD FROM PRESET 123-456-978" << endl;
+        v.at(2).at(0) = 7;
+        v.at(2).at(1) = 6;
+        v.at(2).at(2) = 5;
+    }
+    else {
+        cout << endl << "TODO: CHANGE BOARD FROM PRESET 123-456-978" << endl;
 
-    v.at(0).at(0) = 1;
-    v.at(0).at(1) = 2;
-    v.at(0).at(2) = 3;
+        v.at(0).at(0) = 1;
+        v.at(0).at(1) = 2;
+        v.at(0).at(2) = 3;
 
-    v.at(1).at(0) = 4;
-    v.at(1).at(1) = 5;
-    v.at(1).at(2) = 6;
+        v.at(1).at(0) = 4;
+        v.at(1).at(1) = 5;
+        v.at(1).at(2) = 6;
 
-    v.at(2).at(0) = 9;
-    v.at(2).at(1) = 7;
-    v.at(2).at(2) = 8;
+        v.at(2).at(0) = 9;
+        v.at(2).at(1) = 7;
+        v.at(2).at(2) = 8;
+    }
 }
 
 void printVec(const vector<vector<int>> &v) {
@@ -82,10 +95,13 @@ Board::Board() {
     // printVec(goal);
 };
 
-Board::Board(Board *p, const vector<vector<int>> &v) {
+Board::Board(Board *p, const vector<vector<int>> &v, int calc) {
     board = v;
     p->getConstants(goal, size, blanknum, depth);
     parent = p;
+    h = calculateH(board, goal, calc);
+    // cout << "new H: " << h << endl;
+    // printBoard();
 }
 
 void Board::findPos(const vector<vector<int>> &v, int &pos1, int &pos2, int num) {
@@ -199,39 +215,76 @@ double distance(int x1, int y1, int x2, int y2) {
     return sqrt(pow(x1-x2, 2) + pow(y1-y2, 2));
 }
 
-double Board::calculateH(const vector<vector<int>> &v, int calc) {  
+double Board::calculateH(const vector<vector<int>> &v, 
+                         const std::vector<std::vector<int>> &g, int calc) {  
     double total = 0;
-    for (int i = 0; i < blanknum-1; i++) {
-        int x1, x2, y1, y2;
-        findPos(v, x1, y1, i+1);
-        findPos(goal, x2, y2, i+1);
-        // cout << "num: " << i+1
-        //      << ", board: (" << x1 
-        //      << ", " << y1 
-        //      << "), goal: (" << x2 
-        //      << ", " << y2 << ")\n";
-        // cout << "num: " << i+1 << ", \tdistance: " << distance(x1, y1, x2, y2) << endl;
-        total += distance(x1, y1, x2, y2);
+
+    switch(calc) {
+        case 0: {
+            total = 0;
+            break;
+        }
+        case 1: { //Mismatched Tile
+            for (int i = 0; i < v.size(); i++) {
+                for (int j = 0; j < v.at(i).size(); j++) {
+                    if (v.at(i).at(j) != g.at(i).at(j)) total++;
+                }
+            }
+
+            // cout << "H: " << total << endl;
+            // printVec(v);
+            break;
+        }
+        case 2: { //Euclidean
+            for (int i = 0; i < blanknum-1; i++) {
+                int x1, x2, y1, y2;
+                findPos(v, x1, y1, i+1);
+                findPos(goal, x2, y2, i+1);
+                total += distance(x1, y1, x2, y2);
+            }
+            break;
+        }
+        default: {
+            cout << "ERROR WITH H CALCULATION, INVALID CALC TYPE" << endl;
+            break;
+        }
     }
-    // cout << "total: " << total << endl;
+
     return total;
 }
 
-int Board::smallestTotal(double U, double D, double L, double R) {
-    double temp = min(min(min(U, D), L), R);
-    h = temp;
-    
-    if (temp == U) return 0;
-    if (temp == D) return 1;
-    if (temp == L) return 2;
-    if (temp == R) return 3;
-    return 0; //default (should never happen)
+vector<double> Board::smallestTotal(double U, double D, double L, double R) {
+    vector<double> ret;
+    vector<moves> m;
+
+    // fill moves vector
+    if (U != 81) m.push_back(moves(U, 0));
+    if (D != 81) m.push_back(moves(D, 1));
+    if (L != 81) m.push_back(moves(L, 2));
+    if (R != 81) m.push_back(moves(R, 3));
+
+    // sort moves vector
+    sort(m.begin(), m.end(), compare());
+
+    // fill ret with moves in correct order
+    for (int i = 0; i < m.size(); i++) {
+        ret.push_back(m.at(i).move);
+    }
+
+    return ret;
 }
 
-Board* Board::ASearch(int calc) {
+bool Board::checkKnowns(vector<Board*> &knowns, vector<vector<int>> &v) {
+    for (int i = 0; i < knowns.size(); i++) {
+        if (v == knowns.at(i)->getVector()) return true;
+    }
+    return false;
+}
+
+Board* Board::ASearch(vector<Board*> &knowns, int calc) {
     vector<vector<int>> tempVector = board;
 
-    double hB = calculateH(board, calc);
+    double hB = calculateH(board, goal, calc);
 
     int pos1, pos2;
     findPos(board, pos1, pos2, blanknum);
@@ -242,18 +295,25 @@ Board* Board::ASearch(int calc) {
         hR = blanknum*blanknum;
 
     // Check possible 4 next states
-    if (isMoveValid(pos1, pos2, 0)) hU = calculateH(move(0), calc); //Up
-    if (isMoveValid(pos1, pos2, 1)) hD = calculateH(move(1), calc); //Down
-    if (isMoveValid(pos1, pos2, 2)) hL = calculateH(move(2), calc); //Left
-    if (isMoveValid(pos1, pos2, 3)) hR = calculateH(move(3), calc); //Right
+    if (isMoveValid(pos1, pos2, 0)) hU = calculateH(move(0), goal, calc); //Up
+    if (isMoveValid(pos1, pos2, 1)) hD = calculateH(move(1), goal, calc); //Down
+    if (isMoveValid(pos1, pos2, 2)) hL = calculateH(move(2), goal, calc); //Left
+    if (isMoveValid(pos1, pos2, 3)) hR = calculateH(move(3), goal, calc); //Right
 
-    // cout << "totals: " << hU << ", " << hD 
-    //     << ", " << hL << ", " << hR 
-    //     << "\tBoard: " << hB << endl;
+    cout << "totals: " << hU << ", " << hD 
+        << ", " << hL << ", " << hR 
+        << "\tBoard: " << hB << endl;
 
-    tempVector = move(smallestTotal(hU, hD, hL, hR));
+    vector<double> possibleMoves = smallestTotal(hU, hD, hL, hR);
 
-    return new Board(this, tempVector);
+    //iterate over all moves and return when we dont have a duplicate
+    for (int i = 0; i < possibleMoves.size(); i++) {
+        vector<vector<int>> temp = move(possibleMoves.at(i));
+        if (!checkKnowns(knowns, temp)) return new Board(this, temp, calc);
+        cout << "hehe" << endl;
+    }
+    
+    return nullptr;
 }
 
 vector<Board*> Board::ASearchUniform() {
@@ -266,10 +326,10 @@ vector<Board*> Board::ASearchUniform() {
     // printVec(board);
 
     // Check possible 4 next states and push all possible ones
-    if (isMoveValid(pos1, pos2, 0)) temp.push_back(new Board(this, move(0))); //Up
-    if (isMoveValid(pos1, pos2, 1)) temp.push_back(new Board(this, move(1))); //Down
-    if (isMoveValid(pos1, pos2, 2)) temp.push_back(new Board(this, move(2))); //Left
-    if (isMoveValid(pos1, pos2, 3)) temp.push_back(new Board(this, move(3))); //Right
+    if (isMoveValid(pos1, pos2, 0)) temp.push_back(new Board(this, move(0), 0)); //Up
+    if (isMoveValid(pos1, pos2, 1)) temp.push_back(new Board(this, move(1), 0)); //Down
+    if (isMoveValid(pos1, pos2, 2)) temp.push_back(new Board(this, move(2), 0)); //Left
+    if (isMoveValid(pos1, pos2, 3)) temp.push_back(new Board(this, move(3), 0)); //Right
     
     return temp;
 }
