@@ -114,7 +114,7 @@ void UI::setBoard(int c) {
             }
         }
     }
-    
+
     // check duplicate numbers
     for (unsigned int k = 1; k < (size*2)+1; k++) {
         bool temp = false;

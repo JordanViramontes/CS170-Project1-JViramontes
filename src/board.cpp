@@ -9,115 +9,35 @@
 
 using namespace std;
 
-// additional helper function
-void fillTestVec(vector<vector<int>> &v, int size) {
-    int cnt = 1;
-    for (int i = 0; i < size; i++) {
-        vector<int> tmp;
-        for (int j = 0; j < size; j++) {
-            tmp.push_back(cnt);
-            cnt++;
-        }
-        v.push_back(tmp);
-    }
-
-    bool a = true;
-    if (a) {
-        // cout << endl << "TODO: CHANGE BOARD FROM PRESET 123-489-765" << endl;
-
-        // v.at(0).at(0) = 1;
-        // v.at(0).at(1) = 2;
-        // v.at(0).at(2) = 3;
-
-        // v.at(1).at(0) = 4;
-        // v.at(1).at(1) = 8;
-        // v.at(1).at(2) = 9;
-
-        // v.at(2).at(0) = 7;
-        // v.at(2).at(1) = 6;
-        // v.at(2).at(2) = 5;
-        cout << endl << "TODO: CHANGE BOARD FROM PRESET 243-576-918" << endl;
-
-        v.at(0).at(0) = 2;
-        v.at(0).at(1) = 4;
-        v.at(0).at(2) = 3;
-
-        v.at(1).at(0) = 5;
-        v.at(1).at(1) = 7;
-        v.at(1).at(2) = 6;
-
-        v.at(2).at(0) = 9;
-        v.at(2).at(1) = 1;
-        v.at(2).at(2) = 8;
-    }
-    else {
-        cout << endl << "TODO: CHANGE BOARD FROM PRESET 123-456-978" << endl;
-
-        v.at(0).at(0) = 1;
-        v.at(0).at(1) = 2;
-        v.at(0).at(2) = 3;
-
-        v.at(1).at(0) = 4;
-        v.at(1).at(1) = 5;
-        v.at(1).at(2) = 6;
-
-        v.at(2).at(0) = 9;
-        v.at(2).at(1) = 7;
-        v.at(2).at(2) = 8;
-    }
-}
-
-// Board
-
-Board::Board() {
-    size = 3;
-
-    fillGoal(goal, size);
-    fillTestVec(board, size); //TODO: CHANGE TO REGULAR
-
-    blanknum = 9; 
-    depth = 0; 
-    h = calculateH(board, goal, 2);
-    f = h + depth;
-
-
-    parent = nullptr;
-    
-    
-
-    cout << "TODO: FIX DEFAULT CASE FOR BOARD" << endl;
-
-    // printVec(board);
-    // printVec(goal);
-};
-
-Board::Board(Board *p, const vector<vector<int>> &v, int calc) {
+// Board (object should never be created without a vector)
+Board::Board(Board *p, const vector<vector<int>> &v, const vector<vector<int>> &goal, int calc) {
     board = v;
 
     if (p == nullptr) {
-        size = 3;
-        blanknum = 3*3;
-        depth = 0;
-        fillGoal(goal, size);
+        blanknum = size*size;
+        g = 0;
     }
-    else p->getConstants(goal, size, blanknum, depth);
+    else p->getConstants(size, blanknum, g);
 
     parent = p;
     h = calculateH(board, goal, calc);
-    f = h + depth;
+    f = h + g;
 }
 
-void Board::fillGoal(vector<vector<int>> &v, int size) {
-    int cnt = 1;
+Board::~Board() {
+    parent = nullptr; delete parent;
 
-    for (int i = 0; i < size; i++) {
-        vector<int> tmp;
-        for (int j = 0; j < size; j++) {
-            tmp.push_back(cnt);
-            cnt++;
-        }
-        v.push_back(tmp);
+    // free children
+    for (unsigned int i = 0; i < children.size(); i++) {
+        children.at(i) = nullptr; delete children.at(i);
     }
+}
+
+void const Board::getConstants(int &s, int &bN, int &d) {
+    // this will be called by the constructor
+    s = size;
+    bN = blanknum;
+    d = g+1;
 }
 
 void Board::findPos(const vector<vector<int>> &v, int &pos1, int &pos2, int num) {
@@ -176,7 +96,6 @@ vector<vector<int>> Board::move(int move) {
     // get blank's current position
     int pos1, pos2;
     findPos(tempBoard, pos1, pos2, board.size() * tempBoard.size());
-    // cout << "pos1: " << pos1 << ", pos2: " << pos2 << endl;
 
     // Check for valitiy before moving
     if (!isMoveValid(pos1, pos2, move)) {
@@ -255,7 +174,7 @@ double Board::calculateH(const vector<vector<int>> &v,
             for (int i = 0; i < blanknum-1; i++) {
                 int x1, x2, y1, y2;
                 findPos(v, x1, y1, i+1);
-                findPos(goal, x2, y2, i+1);
+                findPos(g, x2, y2, i+1);
                 total += distance(x1, y1, x2, y2);
             }
             break;
@@ -269,35 +188,7 @@ double Board::calculateH(const vector<vector<int>> &v,
     return total;
 }
 
-vector<double> Board::sortTotals(double U, double D, double L, double R) {
-    vector<double> ret;
-    vector<moves> m;
-
-    // fill moves vector
-    if (U != 81) m.push_back(moves(U, 0));
-    if (D != 81) m.push_back(moves(D, 1));
-    if (L != 81) m.push_back(moves(L, 2));
-    if (R != 81) m.push_back(moves(R, 3));
-
-    // sort moves vector
-    sort(m.begin(), m.end(), compare());
-
-    // fill ret with moves in correct order
-    for (int i = 0; i < m.size(); i++) {
-        ret.push_back(m.at(i).move);
-    }
-
-    return ret;
-}
-
-bool Board::checkKnowns(vector<Board*> &knowns, vector<vector<int>> &v) {
-    for (int i = 0; i < knowns.size(); i++) {
-        if (v == knowns.at(i)->getVector()) return true;
-    }
-    return false;
-}
-
-vector<Board*> Board::ASearch(vector<Board*> &knowns, int calc) {
+vector<Board*> Board::ASearch(vector<Board*> &knowns, const std::vector<std::vector<int>> &goal, int calc) {
     vector<vector<int>> tempVector = board;
 
     double hB = calculateH(board, goal, calc);
@@ -316,39 +207,70 @@ vector<Board*> Board::ASearch(vector<Board*> &knowns, int calc) {
     if (isMoveValid(pos1, pos2, 2)) hL = calculateH(move(2), goal, calc); //Left
     if (isMoveValid(pos1, pos2, 3)) hR = calculateH(move(3), goal, calc); //Right
 
-    // cout << "totals: " << hU << ", " << hD 
-    //     << ", " << hL << ", " << hR 
-    //     << "\tBoard: " << hB << endl;
+    // Sort and Find Possible Moves
+    vector<double> possibleMoves;
+    vector<moves> m;
 
-    vector<double> possibleMoves = sortTotals(hU, hD, hL, hR);
+    // fill moves vector
+    if (hU != 81) m.push_back(moves(hU, 0));
+    if (hD != 81) m.push_back(moves(hD, 1));
+    if (hL != 81) m.push_back(moves(hL, 2));
+    if (hR != 81) m.push_back(moves(hR, 3));
+
+    // sort moves vector
+    sort(m.begin(), m.end(), compare());
+
+    // fill possibleMoves with moves in correct order
+    for (int i = 0; i < m.size(); i++) {
+        possibleMoves.push_back(m.at(i).move);
+    }
+
     vector<Board*> returnBoards;
+
     //iterate over all moves and return all new states
     for (int i = 0; i < possibleMoves.size(); i++) {
         vector<vector<int>> temp = move(possibleMoves.at(i));
 
-        if (!checkKnowns(knowns, temp)) returnBoards.push_back(new Board(this, temp, calc));
+        // check knowns
+        bool isKnown = false;
+        for (int i = 0; i < knowns.size(); i++) {
+            if (temp == knowns.at(i)->getVector()) {
+                isKnown = true;
+                break;
+            }
+        }
+
+        // if its unique, push back a new board
+        if (!isKnown) returnBoards.push_back(new Board(this, temp, goal, calc));
     }
     
     explored = true;
     return returnBoards;
 }
 
-vector<Board*> Board::ASearchUniform() {
+vector<Board*> Board::ASearchUniform(const std::vector<std::vector<int>> &goal) {
     vector<Board*> temp;
 
     int pos1, pos2;
     findPos(board, pos1, pos2, blanknum);
 
     // Check possible 4 next states and push all possible ones
-    if (isMoveValid(pos1, pos2, 0)) temp.push_back(new Board(this, move(0), 0)); //Up
-    if (isMoveValid(pos1, pos2, 1)) temp.push_back(new Board(this, move(1), 0)); //Down
-    if (isMoveValid(pos1, pos2, 2)) temp.push_back(new Board(this, move(2), 0)); //Left
-    if (isMoveValid(pos1, pos2, 3)) temp.push_back(new Board(this, move(3), 0)); //Right
+    if (isMoveValid(pos1, pos2, 0)) temp.push_back(new Board(this, move(0), goal, 0)); //Up
+    if (isMoveValid(pos1, pos2, 1)) temp.push_back(new Board(this, move(1), goal, 0)); //Down
+    if (isMoveValid(pos1, pos2, 2)) temp.push_back(new Board(this, move(2), goal, 0)); //Left
+    if (isMoveValid(pos1, pos2, 3)) temp.push_back(new Board(this, move(3), goal, 0)); //Right
     
+    explored = true;
+
     return temp;
 }
 
 void const Board::printBoard() {
+    cout << "Explored: " << explored
+         << ", Depth: " << g
+         << ", H: " << h
+         << ", F:" << f << endl;
+        
     for (int i = 0; i < board.size(); i++) {
         for (int j = 0; j < board.at(i).size(); j++) {
             if (board.at(i).at(j) == 9) cout << "0, ";
@@ -359,13 +281,8 @@ void const Board::printBoard() {
     cout << endl;
 }
 
-void const Board::printGoal() {
-    for (int i = 0; i < goal.size(); i++) {
-        for (int j = 0; j < goal.at(i).size(); j++) {
-            if (goal.at(i).at(j) == 9) cout << "0, ";
-            else cout << goal.at(i).at(j) << ", ";
-        }
-        cout << endl;
+void Board::addChildren(vector<Board*> t) {
+    for (unsigned int i = 0; i < t.size(); i++) { 
+        children.push_back(t.at(i)); 
     }
-    cout << endl;
 }

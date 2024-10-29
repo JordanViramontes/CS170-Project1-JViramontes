@@ -16,57 +16,51 @@ Graph::Graph() {
 }
 
 Graph::Graph(vector<vector<int>> v, int c) {
-    initBoard = new Board(nullptr, v, c);
+    // set goal
+    int cnt = 1;
+    for (int i = 0; i < size; i++) {
+        vector<int> tmp;
+        for (int j = 0; j < size; j++) {
+            tmp.push_back(cnt);
+            cnt++;
+        }
+        goal.push_back(tmp);
+    }
+
+    initBoard = new Board(nullptr, v, goal, c);
     finalBoard = nullptr;
     allBoards.push_back(initBoard);
-
     calc = c;
 }
 
-Graph::Graph(int c) {
-    // if calc = 0:uniform, 1:misplaced tile, 2:euclidean
-    initBoard = new Board();
-    allBoards.push_back(initBoard);
-    
-    calc = c;
-}
-
-void Graph::printRoute(Board *b, int depth) {
+void Graph::printRoute(Board *b) {
     // recursively print route from final board
     if (b == nullptr) return;
 
-    printRoute(b->getParent(), depth-1);
+    printRoute(b->getParent());
 
-    cout << "Explored: " << b->getExplored()
-         << ", Depth: " << b->getDepth() 
-         << ", H: " << b->getH() 
-         << ", F:" << b->getF() << endl;
     b->printBoard();
 }
 
 void Graph::printRoute() {
-    printRoute(finalBoard, finalBoard->getDepth());
+    printRoute(finalBoard);
 }
 
 void Graph::printAllBoards() {
     for (int i = 0; i < allBoards.size(); i++) {
-        cout << "Explored: " << allBoards.at(i)->getExplored()
-             << ", Depth: " << allBoards.at(i)->getDepth() 
-             << ", H: " << allBoards.at(i)->getH() 
-             << ", F:" << allBoards.at(i)->getF() << endl;
         allBoards.at(i)->printBoard();
     }
 }
 
 void Graph::ASearch(Board* b, int calc, int g) {
     // check if we've hit our goal
-    if (b->getVector() == b->getGoal()) {
+    if (b->getVector() == goal) {
         finalBoard = b;
         return; 
     }
 
     // get all valid children and add them to graph
-    vector<Board*> temp = b->ASearch(allBoards, calc);
+    vector<Board*> temp = b->ASearch(allBoards, goal, calc);
     b->addChildren(temp);
     addBoardVec(temp);
 
@@ -100,7 +94,7 @@ vector<Board*> Graph::ASearchUniform(Board* b) {
     bool flag = true;
 
     while (flag) {
-        vector<Board*> temp = q.at(i)->ASearchUniform();
+        vector<Board*> temp = q.at(i)->ASearchUniform(goal);
 
         
         //gets all possiblechildren
@@ -109,15 +103,14 @@ vector<Board*> Graph::ASearchUniform(Board* b) {
             if (!checkKnowns(q, temp.at(j))) { 
                 //push board to q
                 q.push_back(temp.at(j));
-                q.at(i)->addSingleChild(temp.at(j));
+
+                vector<Board*> tempChildVec = { temp.at(j )};
+                q.at(i)->addChildren(tempChildVec);
 
                 // break loop if we've found it
-                if (temp.at(j)->getVector() == temp.at(j)->getGoal()) {
+                if (temp.at(j)->getVector() == goal) {
                     flag = false;
                 }
-
-                // set nodes as explored
-                q.at(i)->setExplored();
             }
         }
 

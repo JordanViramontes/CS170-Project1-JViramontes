@@ -30,7 +30,6 @@ Source for help with using sort() function with structs
 using namespace std;
 
 int main() {
-    cout << "TODO: WORK ON TIEBREAKERS AND G(N)" << endl;
     bool cont = true;
 
     while (cont) {
@@ -42,7 +41,7 @@ int main() {
         ui.ASearch();
         if (ui.getIsComplete()) cont = false;
 
-        // ui.printRoute();
+        ui.printRoute();
     }
     
 
