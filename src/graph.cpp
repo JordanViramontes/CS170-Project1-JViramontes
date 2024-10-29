@@ -13,6 +13,13 @@ Graph::Graph() {
     allBoards.push_back(initBoard);
 }
 
+Graph::Graph(vector<vector<int>> v, int c) {
+    initBoard = new Board(nullptr, v, c);
+    allBoards.push_back(initBoard);
+
+    calc = c;
+}
+
 Graph::Graph(int c) {
     // if calc = 0:uniform, 1:misplaced tile, 2:euclidean
     initBoard = new Board();
@@ -21,51 +28,71 @@ Graph::Graph(int c) {
     calc = c;
 }
 
-void Graph::printGraph(Board* b, int depth) { //DFS
-    if (b == nullptr) return; //base case
-
-    cout << "Depth: " << depth 
-         << ", H: " << b->getH() << endl;
-    b->printBoard();
-
-    for (int i = 0; i < b->children.size(); i++) { //print children
-        printGraph(b->children.at(i), depth+1);
-    }
-}
-
-void Graph::printGraphUniform(Board *b, int depth) {
+void Graph::printRoute(Board *b, int depth) {
+    // recursively print route from final board
     if (b == nullptr) return;
 
-    printGraphUniform(b->getParent(), depth-1);
+    printRoute(b->getParent(), depth-1);
 
-    cout << "Depth: " << depth << endl;
+    // cout << "G: " << depth << ", H: " << b->getH() << endl;
+    cout << "Explored: " << b->getExplored()
+         << ", Depth: " << b->getDepth() 
+         << ", H: " << b->getH() 
+         << ", F:" << b->getF() << endl;
     b->printBoard();
 }
 
-void Graph::printGraph() {
-    // The "correct" Board is at the end, recursively look at parents
-    if (calc == 0) printGraphUniform(allBoards.at(allBoards.size()-1), 
-                                     allBoards.at(allBoards.size()-1)->getDepth());
-    //euclideon and missing tile
-    else printGraph(initBoard, 0);
+void Graph::printRoute() {
+    printRoute(finalBoard, finalBoard->getDepth());
 }
 
 void Graph::printAllBoards() {
     for (int i = 0; i < allBoards.size(); i++) {
-        cout << "Depth: " << allBoards.at(i)->getDepth() << endl;
+        cout << "Explored: " << allBoards.at(i)->getExplored()
+             << ", Depth: " << allBoards.at(i)->getDepth() 
+             << ", H: " << allBoards.at(i)->getH() 
+             << ", F:" << allBoards.at(i)->getF() << endl;
         allBoards.at(i)->printBoard();
     }
+    int expanded = 0;
+    for (unsigned int i = 0; i < allBoards.size(); i++) {
+        if (allBoards.at(i)->getExplored()) expanded++;
+    }
+    cout << "Total Nodes Expanded: " << expanded << endl;
 }
 
 void Graph::ASearch(Board* b, int calc, int g) {
-    if (b->getVector() == b->getGoal()) return; // check if we've hit our goal
-    if (b == nullptr) ASearch(b->parent, calc, g-1);
-    
-    Board* temp = b->ASearch(allBoards, calc);
-    allBoards.push_back(temp);
-    b->children.push_back(temp);
+    // check if we've hit our goal
+    if (b->getVector() == b->getGoal()) {
+        finalBoard = b;
+        return; 
+    }
 
-    ASearch(temp, calc, g+1);
+    // get all valid children and add them to graph
+    vector<Board*> temp = b->ASearch(allBoards, calc);
+    b->addChildren(temp);
+    addBoardVec(temp);
+
+    //check all boards for lower f value
+    double minf = -1;
+    Board* minBoard = nullptr;
+
+    for (unsigned int i = 1; i < allBoards.size(); i++) {
+        if (allBoards.at(i)->getExplored()) continue;
+        if (minf < 0) {
+            minf = allBoards.at(i)->getF();
+            minBoard = allBoards.at(i);
+        }
+        if (allBoards.at(i)->getF() < minf) {
+            minf = allBoards.at(i)->getF();
+            minBoard = allBoards.at(i);
+        }
+    }
+
+    ASearch(minBoard, calc, minBoard->getDepth()+1);
+
+    minBoard = nullptr;
+    delete minBoard;
 }
 
 vector<Board*> Graph::ASearchUniform(Board* b) {
@@ -76,24 +103,22 @@ vector<Board*> Graph::ASearchUniform(Board* b) {
     bool flag = true;
 
     while (flag) {
-        //gets all possiblechildren
         vector<Board*> temp = q.at(i)->ASearchUniform();
 
+        //gets all possiblechildren
         for (int j = 0; j < temp.size(); j++) {
             if (!checkKnowns(q, temp.at(j))) { // check for dups
                 //push board to q
                 q.push_back(temp.at(j));
-                q.at(i)->children.push_back(temp.at(j));
+                q.at(i)->addSingleChild(temp.at(j));
 
                 // break loop if we've found it
                 if (temp.at(j)->getVector() == temp.at(j)->getGoal()) {
                     flag = false;
                 }
-                // cout << "NEW: " << endl;
-                // temp.at(j)->printBoard();
+
+                q.at(i)->setExplored();
             }
-            // else cout << "OLD" << endl;
-            // temp.at(j)->printBoard();
         }
 
         i++;
@@ -102,8 +127,10 @@ vector<Board*> Graph::ASearchUniform(Board* b) {
 }
 
 void Graph::ASearch() {
-    printAllBoards();
-    if (calc == 0) allBoards = ASearchUniform(initBoard);
+    if (calc == 0) {
+        allBoards = ASearchUniform(initBoard);
+        finalBoard = allBoards.at(allBoards.size()-1);
+    }
     else ASearch(initBoard, calc, 1);
 }
 

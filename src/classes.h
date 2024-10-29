@@ -28,61 +28,62 @@ class Board {
         std::vector<std::vector<int>> board; //current board
         std::vector<std::vector<int>> goal;
         std::string blankPos = "00";
+        bool explored = false;
         double h;
+        int depth;
+        double f;
         int size; //3x3 => size=9
         int blanknum;
-        int depth;
+        Board* parent;
+        std::vector<Board*> children;
 
-        void fillVec(std::vector<std::vector<int>> &, int);
+        void fillGoal(std::vector<std::vector<int>> &, int);
         void findPos(const std::vector<std::vector<int>> &, int &, int &, int); //return 2 ints that show location of blank, use as a helped
         bool isMoveValid(int, int, int); //check if move is valid
         double calculateH(const std::vector<std::vector<int>> &, 
                           const std::vector<std::vector<int>> &, int); //calculate h, int = type of calculations
-        std::vector<double> smallestTotal(double, double, double, double); //specificlaly for finding smallest total, returns the corresponding move
+        std::vector<double> sortTotals(double, double, double, double); //specificlaly for finding smallest total, returns the corresponding move
         std::vector<std::vector<int>> move(int); //make a move
         bool checkKnowns(std::vector<Board*> &, std::vector<std::vector<int>> &);
     public:
         Board(); //default constructor
         Board(Board*, const std::vector<std::vector<int>> &v, int);
-        
-        Board* ASearch(std::vector<Board*> &, int); //Search algorithm, 2nd argument is which type of A search
+        ~Board() {
+            parent = nullptr;
+        }
+
+        std::vector<Board*> ASearch(std::vector<Board*> &, int); //Search algorithm, 2nd argument is which type of A search
         std::vector<Board*> ASearchUniform();
-        Board* parent;
-        std::vector<Board*> children;
-
         void const printBoard();
-
-        double const getH() {
-            return h;
+        void addChildren(std::vector<Board*> t) { 
+            for (unsigned int i = 0; i < t.size(); i++) { children.push_back(t.at(i)); }
         }
-
-        int const getDepth() {
-            return depth;
+        void addSingleChild(Board* t) { children.push_back(t); }
+        const void printChildren() {
+            for (unsigned int i = 0; i < children.size(); i++) {
+                std::cout << "Child: " << i << "; "
+                     << "Depth: " << children.at(i)->getDepth() 
+                     << ", H: " << children.at(i)->getH() 
+                     << ", F:" << children.at(i)->getF() << std::endl;
+                children.at(i)->printBoard();
+            }
         }
-
         void const getConstants(std::vector<std::vector<int>> &g, int &s, int &bN, int &d) {
             g = goal;
             s = size;
             bN = blanknum;
             d = depth+1;
         }
+        std::vector<std::vector<int>> const getVector() { return board; }
+        std::vector<std::vector<int>> const getGoal() { return goal; }
+        std::vector<Board*> const getChildren() { return children; }
+        Board* const getParent() { return parent; }
+        double const getH() { return h; }
+        double const getF() { return f; }
+        int const getDepth() { return depth; }
+        bool const getExplored() { return explored; }
+        void setExplored() { explored = true; }
 
-        std::vector<std::vector<int>> const getVector() {
-            return board;
-        }
-
-        std::vector<std::vector<int>> const getGoal() {
-            return goal;
-        }
-        
-        std::vector<Board*> const getChildren() {
-            return children;
-        }
-
-        Board* const getParent() {
-            return parent;
-        }
-        
 };
 
 class Graph {
@@ -92,16 +93,42 @@ class Graph {
         Board* finalBoard;
         int calc;
 
-        void printGraph(Board*, int);
-        void printGraphUniform(Board*, int);
+        void printRoute(Board*, int);
         void ASearch(Board*, int, int);
         std::vector<Board*> ASearchUniform(Board*);
         bool checkKnowns(const std::vector<Board*> &, Board*);
+        void addBoardVec(std::vector<Board*> t) { 
+            for (unsigned int i = 0; i < t.size(); i++) { allBoards.push_back(t.at(i)); }
+        }
             
     public:
         Graph();
+        Graph(std::vector<std::vector<int>>, int);
         Graph(int);
-        void printGraph();
+        ~Graph() {
+            for (int i = 0; i < allBoards.size(); i++) {
+                delete allBoards.at(i);
+                allBoards.at(i) = nullptr;
+            }
+            initBoard = nullptr; delete initBoard;
+            finalBoard = nullptr; delete finalBoard;
+        }
+
+        void printRoute();
         void printAllBoards();
         void ASearch();
+};
+
+class UI {
+    private:
+        Graph g;
+        bool isComplete = false;
+        void randomBoard();
+        void setBoard();
+        void quitSequence();
+
+    public:
+        UI() { };
+        void startingSequence();
+        const bool getIsComplete() { return isComplete; }
 };
