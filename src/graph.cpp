@@ -9,12 +9,15 @@
 using namespace std;
 
 Graph::Graph() {
-    initBoard = new Board();
-    allBoards.push_back(initBoard);
+    allBoards.push_back(nullptr);
+    initBoard = nullptr;
+    finalBoard = nullptr;
+    calc = 0;
 }
 
 Graph::Graph(vector<vector<int>> v, int c) {
     initBoard = new Board(nullptr, v, c);
+    finalBoard = nullptr;
     allBoards.push_back(initBoard);
 
     calc = c;
@@ -34,7 +37,6 @@ void Graph::printRoute(Board *b, int depth) {
 
     printRoute(b->getParent(), depth-1);
 
-    // cout << "G: " << depth << ", H: " << b->getH() << endl;
     cout << "Explored: " << b->getExplored()
          << ", Depth: " << b->getDepth() 
          << ", H: " << b->getH() 
@@ -54,11 +56,6 @@ void Graph::printAllBoards() {
              << ", F:" << allBoards.at(i)->getF() << endl;
         allBoards.at(i)->printBoard();
     }
-    int expanded = 0;
-    for (unsigned int i = 0; i < allBoards.size(); i++) {
-        if (allBoards.at(i)->getExplored()) expanded++;
-    }
-    cout << "Total Nodes Expanded: " << expanded << endl;
 }
 
 void Graph::ASearch(Board* b, int calc, int g) {
@@ -105,9 +102,11 @@ vector<Board*> Graph::ASearchUniform(Board* b) {
     while (flag) {
         vector<Board*> temp = q.at(i)->ASearchUniform();
 
+        
         //gets all possiblechildren
         for (int j = 0; j < temp.size(); j++) {
-            if (!checkKnowns(q, temp.at(j))) { // check for dups
+            // check for dups
+            if (!checkKnowns(q, temp.at(j))) { 
                 //push board to q
                 q.push_back(temp.at(j));
                 q.at(i)->addSingleChild(temp.at(j));
@@ -117,6 +116,7 @@ vector<Board*> Graph::ASearchUniform(Board* b) {
                     flag = false;
                 }
 
+                // set nodes as explored
                 q.at(i)->setExplored();
             }
         }
@@ -126,12 +126,18 @@ vector<Board*> Graph::ASearchUniform(Board* b) {
     return q;
 }
 
-void Graph::ASearch() {
+int Graph::ASearch() {
     if (calc == 0) {
         allBoards = ASearchUniform(initBoard);
         finalBoard = allBoards.at(allBoards.size()-1);
     }
     else ASearch(initBoard, calc, 1);
+
+    int expanded = 0;
+    for (unsigned int i = 0; i < allBoards.size(); i++) {
+        if (allBoards.at(i)->getExplored()) expanded++;
+    }
+    return expanded;
 }
 
 bool Graph::checkKnowns(const vector<Board*> &v, Board* b) {
@@ -140,5 +146,3 @@ bool Graph::checkKnowns(const vector<Board*> &v, Board* b) {
     }
     return false;
 }
-
-

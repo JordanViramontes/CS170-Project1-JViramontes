@@ -31,9 +31,18 @@ using namespace std;
 
 int main() {
     cout << "TODO: WORK ON TIEBREAKERS AND G(N)" << endl;
-    UI ui;
-    while (!ui.getIsComplete()) {
+    bool cont = true;
+
+    while (cont) {
+        UI ui;
         ui.startingSequence();
+
+        if (ui.getIsComplete()) cont = false;
+
+        ui.ASearch();
+        if (ui.getIsComplete()) cont = false;
+
+        // ui.printRoute();
     }
     
 

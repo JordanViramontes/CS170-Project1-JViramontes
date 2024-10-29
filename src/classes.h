@@ -55,6 +55,7 @@ class Board {
         std::vector<Board*> ASearch(std::vector<Board*> &, int); //Search algorithm, 2nd argument is which type of A search
         std::vector<Board*> ASearchUniform();
         void const printBoard();
+        void const printGoal();
         void addChildren(std::vector<Board*> t) { 
             for (unsigned int i = 0; i < t.size(); i++) { children.push_back(t.at(i)); }
         }
@@ -116,19 +117,27 @@ class Graph {
 
         void printRoute();
         void printAllBoards();
-        void ASearch();
+        int ASearch();
+        int getDepth() { return finalBoard->getDepth(); };
 };
 
 class UI {
     private:
-        Graph g;
+        Graph* g;
         bool isComplete = false;
         void randomBoard();
-        void setBoard();
+        void setBoard(int c);
+        int setCalc();
         void quitSequence();
 
     public:
         UI() { };
+        ~UI() { 
+            g = nullptr;
+            delete g;
+        }
         void startingSequence();
+        void ASearch();
+        void printRoute();
         const bool getIsComplete() { return isComplete; }
 };

@@ -93,7 +93,15 @@ Board::Board() {
 
 Board::Board(Board *p, const vector<vector<int>> &v, int calc) {
     board = v;
-    if (p != nullptr) p->getConstants(goal, size, blanknum, depth);
+
+    if (p == nullptr) {
+        size = 3;
+        blanknum = 3*3;
+        depth = 0;
+        fillGoal(goal, size);
+    }
+    else p->getConstants(goal, size, blanknum, depth);
+
     parent = p;
     h = calculateH(board, goal, calc);
     f = h + depth;
@@ -343,7 +351,19 @@ vector<Board*> Board::ASearchUniform() {
 void const Board::printBoard() {
     for (int i = 0; i < board.size(); i++) {
         for (int j = 0; j < board.at(i).size(); j++) {
-            cout << board.at(i).at(j) << ", ";
+            if (board.at(i).at(j) == 9) cout << "0, ";
+            else cout << board.at(i).at(j) << ", ";
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
+
+void const Board::printGoal() {
+    for (int i = 0; i < goal.size(); i++) {
+        for (int j = 0; j < goal.at(i).size(); j++) {
+            if (goal.at(i).at(j) == 9) cout << "0, ";
+            else cout << goal.at(i).at(j) << ", ";
         }
         cout << endl;
     }
