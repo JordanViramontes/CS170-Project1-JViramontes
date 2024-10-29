@@ -63,37 +63,28 @@ class Board {
 
 class Graph {
     private:
-        std::vector<Board*> allBoards;
-        Board* initBoard;
-        Board* finalBoard;
-        std::vector<std::vector<int>> goal;
+        std::vector<Board*> allBoards; // vector of all created boards in order of creation
+        Board* initBoard; // first board
+        Board* finalBoard; // final board
+        std::vector<std::vector<int>> goal; // goal state
+        int calc; // determines the heuristic
         int size = 3;
-        int calc;
 
         void printRoute(Board*);
         void ASearch(Board*, int, int);
         std::vector<Board*> ASearchUniform(Board*);
-        bool checkKnowns(const std::vector<Board*> &, Board*);
-        void addBoardVec(std::vector<Board*> t) { 
-            for (unsigned int i = 0; i < t.size(); i++) { allBoards.push_back(t.at(i)); }
-        }
             
     public:
-        Graph();
+        // constructors
         Graph(std::vector<std::vector<int>>, int);
-        ~Graph() {
-            initBoard = nullptr; delete initBoard;
-            finalBoard = nullptr; delete finalBoard;
+        ~Graph();
 
-            // free allBoards
-            for (int i = 0; i < allBoards.size(); i++) {
-                allBoards.at(i) = nullptr; delete allBoards.at(i);
-            }
-        }
-
+        // functions
         void printRoute();
         void printAllBoards();
         int ASearch();
+
+        // get
         int getDepth() { return finalBoard->getDepth(); };
 };
 

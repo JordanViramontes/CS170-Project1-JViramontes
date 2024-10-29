@@ -8,13 +8,6 @@
 
 using namespace std;
 
-Graph::Graph() {
-    allBoards.push_back(nullptr);
-    initBoard = nullptr;
-    finalBoard = nullptr;
-    calc = 0;
-}
-
 Graph::Graph(vector<vector<int>> v, int c) {
     // set goal
     int cnt = 1;
@@ -31,6 +24,16 @@ Graph::Graph(vector<vector<int>> v, int c) {
     finalBoard = nullptr;
     allBoards.push_back(initBoard);
     calc = c;
+}
+
+Graph::~Graph() {
+    initBoard = nullptr; delete initBoard;
+    finalBoard = nullptr; delete finalBoard;
+
+    // free allBoards
+    for (int i = 0; i < allBoards.size(); i++) {
+        allBoards.at(i) = nullptr; delete allBoards.at(i);
+    }
 }
 
 void Graph::printRoute(Board *b) {
@@ -62,7 +65,9 @@ void Graph::ASearch(Board* b, int calc, int g) {
     // get all valid children and add them to graph
     vector<Board*> temp = b->ASearch(allBoards, goal, calc);
     b->addChildren(temp);
-    addBoardVec(temp);
+    for (unsigned int i = 0; i < temp.size(); i++) { 
+        allBoards.push_back(temp.at(i)); 
+    }
 
     //check all boards for lower f value
     double minf = -1;
@@ -100,7 +105,16 @@ vector<Board*> Graph::ASearchUniform(Board* b) {
         //gets all possiblechildren
         for (int j = 0; j < temp.size(); j++) {
             // check for dups
-            if (!checkKnowns(q, temp.at(j))) { 
+            bool knowns = false;
+            for (unsigned int i = 0; i < q.size(); i++) {
+                if (q.at(i)->getVector() == b->getVector()) {
+                    knowns = true;
+                    break;
+                }
+            }
+
+            // continue if no dups found
+            if (!knowns) { 
                 //push board to q
                 q.push_back(temp.at(j));
 
@@ -131,11 +145,4 @@ int Graph::ASearch() {
         if (allBoards.at(i)->getExplored()) expanded++;
     }
     return expanded;
-}
-
-bool Graph::checkKnowns(const vector<Board*> &v, Board* b) {
-    for (int i = 0; i < v.size(); i++) {
-        if (v.at(i)->getVector() == b->getVector()) return true;
-    }
-    return false;
 }
