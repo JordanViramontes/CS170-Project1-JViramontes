@@ -3,6 +3,7 @@
 #include <fstream>
 #include <cmath>
 #include <algorithm>
+#include <memory>
 
 #include "classes.h"
 
@@ -20,23 +21,14 @@ Graph::Graph(vector<vector<int>> v, int c) {
         goal.push_back(tmp);
     }
 
-    initBoard = new Board(nullptr, v, goal, c);
+    // initBoard = new Board(nullptr, v, goal, c);
+    initBoard = shared_ptr<Board>(new Board(nullptr, v, goal, c));
     finalBoard = nullptr;
     allBoards.push_back(initBoard);
     calc = c;
 }
 
-Graph::~Graph() {
-    initBoard = nullptr; delete initBoard;
-    finalBoard = nullptr; delete finalBoard;
-
-    // free allBoards
-    for (int i = 0; i < allBoards.size(); i++) {
-        allBoards.at(i) = nullptr; delete allBoards.at(i);
-    }
-}
-
-void Graph::printRoute(Board *b) {
+void Graph::printRoute(std::shared_ptr<Board> b) {
     // recursively print route from final board
     if (b == nullptr) return;
 
@@ -50,12 +42,12 @@ void Graph::printRoute() {
 }
 
 void Graph::printAllBoards() {
-    for (int i = 0; i < allBoards.size(); i++) {
+    for (unsigned int i = 0; i < allBoards.size(); i++) {
         allBoards.at(i)->printBoard();
     }
 }
 
-void Graph::ASearch(Board* b, int calc, int g) {
+void Graph::ASearch(std::shared_ptr<Board> b, int calc, int g) {
     // check if we've hit our goal
     if (b->getVector() == goal) {
         finalBoard = b;
@@ -63,7 +55,7 @@ void Graph::ASearch(Board* b, int calc, int g) {
     }
 
     // get all valid children and add them to graph
-    vector<Board*> temp = b->ASearch(allBoards, goal, calc);
+    vector<std::shared_ptr<Board>> temp = b->ASearch(allBoards, goal, calc);
     b->addChildren(temp);
     for (unsigned int i = 0; i < temp.size(); i++) { 
         allBoards.push_back(temp.at(i)); 
@@ -71,7 +63,7 @@ void Graph::ASearch(Board* b, int calc, int g) {
 
     //check all boards for lower f value
     double minf = -1;
-    Board* minBoard = nullptr;
+    std::shared_ptr<Board> minBoard = nullptr;
 
     for (unsigned int i = 1; i < allBoards.size(); i++) {
         if (allBoards.at(i)->getExplored()) continue;
@@ -86,57 +78,74 @@ void Graph::ASearch(Board* b, int calc, int g) {
     }
 
     ASearch(minBoard, calc, minBoard->getDepth()+1);
-
-    minBoard = nullptr;
-    delete minBoard;
 }
 
-vector<Board*> Graph::ASearchUniform(Board* b) {
-    //essentially BFS
-    vector<Board*> q;
-    q.push_back(b); //start with init node
+void Graph::ASearchUniform(shared_ptr<Board> b) {
+    //essentially BFS, allBoards already contains the initBoard b
     unsigned int i = 0; //keep track of q (for bfs)
     bool flag = true;
 
-    while (flag) {
-        vector<Board*> temp = q.at(i)->ASearchUniform(goal);
+    // check initboard
+    if (b->getVector() == goal) {
+        return;
+    }
 
+    while (flag) {
+        // gets all possiblechildren
+        cout << "CURRENT: " << endl;
+        allBoards.at(i)->printBoard();
+        vector<shared_ptr<Board>> temp = allBoards.at(i)->ASearchUniform(goal);
         
-        //gets all possiblechildren
-        for (int j = 0; j < temp.size(); j++) {
+        // iterate over next moves
+        for (unsigned int j = 0; j < temp.size(); j++) {
+            if (!flag) continue;
+
             // check for dups
+            cout << "TEST KNOWN FROM TEMP:";
+                temp.at(j)->printBoard();
             bool knowns = false;
-            for (unsigned int i = 0; i < q.size(); i++) {
-                if (q.at(i)->getVector() == b->getVector()) {
+            for (unsigned int k = 0; k < allBoards.size(); k++) {
+                
+                // if total boards is the same as our current move
+                if (allBoards.at(k)->getVector() == temp.at(j)->getVector()) {
+                    cout << "known!" << endl;
                     knowns = true;
                     break;
                 }
             }
+            cout << "b" << endl;
 
-            // continue if no dups found
-            if (!knowns) { 
-                //push board to q
-                q.push_back(temp.at(j));
+            // go to next loop if dups found
+            if (knowns) continue;
 
-                vector<Board*> tempChildVec = { temp.at(j )};
-                q.at(i)->addChildren(tempChildVec);
+            // push board to q
+            cout << "TEST: " << endl;
+            temp.at(j)->printBoard();
 
-                // break loop if we've found it
-                if (temp.at(j)->getVector() == goal) {
-                    flag = false;
-                }
+            // add board to allBoards and set children
+            allBoards.push_back(temp.at(j));
+            // allBoards.at(i)->addSingleChild(temp.at(j));
+
+            // break loop if we've found it
+            if (temp.at(j)->getVector() == goal) {
+                cout << "FOUND IT" << endl;
+                flag = false;          
             }
         }
-
+        
+        cout << "flag: " << flag << endl;
         i++;
     }
-    return q;
+    cout << "? " << endl;
+    return;
 }
 
 int Graph::ASearch() {
     if (calc == 0) {
-        allBoards = ASearchUniform(initBoard);
+        ASearchUniform(initBoard);
+        cout << "check" << endl;
         finalBoard = allBoards.at(allBoards.size()-1);
+        cout << "check2" << endl;
     }
     else ASearch(initBoard, calc, 1);
 

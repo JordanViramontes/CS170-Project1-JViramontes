@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 // mini for help when sorting moves (greedy)
 // had issue where H = 2 different moves
@@ -26,8 +27,8 @@ struct compare {
 class Board {
     private:
         std::vector<std::vector<int>> board; //current board
-        std::vector<Board*> children;
-        Board* parent;
+        std::vector<std::shared_ptr<Board>> children;
+        std::shared_ptr<Board> parent;
         bool explored = false;
         double h; int g; double f;
         int size = 3; // 3x3 board
@@ -41,43 +42,42 @@ class Board {
                           const std::vector<std::vector<int>> &, int); //calculate h, int = type of calculations
     public:
         // constructors
-        Board(Board*, const std::vector<std::vector<int>> &, const std::vector<std::vector<int>> &, int);
-        ~Board();
+        Board(std::shared_ptr<Board>, const std::vector<std::vector<int>> &, const std::vector<std::vector<int>> &, int);
         void const getConstants(int &s, int &bN, int &d);
 
         // Algorithm
-        std::vector<Board*> ASearch(std::vector<Board*> &, const std::vector<std::vector<int>> &, int); //Search algorithm, 2nd argument is which type of A search
-        std::vector<Board*> ASearchUniform(const std::vector<std::vector<int>> &);
-        void addChildren(std::vector<Board*> t);
+        std::vector<std::shared_ptr<Board>> ASearch(std::vector<std::shared_ptr<Board>> &, const std::vector<std::vector<int>> &, int); //Search algorithm, 2nd argument is which type of A search
+        std::vector<std::shared_ptr<Board>> ASearchUniform(const std::vector<std::vector<int>> &);
+        void addChildren(std::vector<std::shared_ptr<Board>> t);
+        void addSingleChild(std::shared_ptr<Board> t);
 
         // Get
         std::vector<std::vector<int>> const getVector() { return board; }
-        Board* const getParent() { return parent; }
+        std::shared_ptr<Board> const getParent() { return parent; }
         double const getF() { return f; }
         int const getDepth() { return g; }
         bool const getExplored() { return explored; }
-
+        void const setParent(std::shared_ptr<Board>);
         // Print
         void const printBoard();
 };
 
 class Graph {
     private:
-        std::vector<Board*> allBoards; // vector of all created boards in order of creation
-        Board* initBoard; // first board
-        Board* finalBoard; // final board
+        std::vector<std::shared_ptr<Board>> allBoards; // vector of all created boards in order of creation
+        std::shared_ptr<Board> initBoard; // first board
+        std::shared_ptr<Board> finalBoard; // final board
         std::vector<std::vector<int>> goal; // goal state
         int calc; // determines the heuristic
         int size = 3;
 
-        void printRoute(Board*);
-        void ASearch(Board*, int, int);
-        std::vector<Board*> ASearchUniform(Board*);
+        void printRoute(std::shared_ptr<Board>);
+        void ASearch(std::shared_ptr<Board>, int, int);
+        void ASearchUniform(std::shared_ptr<Board>);
             
     public:
         // constructors
         Graph(std::vector<std::vector<int>>, int);
-        ~Graph();
 
         // functions
         void printRoute();
@@ -99,12 +99,9 @@ class UI {
 
     public:
         UI() { };
-        ~UI() { 
-            g = nullptr;
-            delete g;
-        }
         void startingSequence();
         void ASearch();
         void printRoute();
+        void printAllBoards();
         const bool getIsComplete() { return isComplete; }
 };

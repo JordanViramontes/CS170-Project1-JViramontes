@@ -4,13 +4,14 @@
 #include <string>
 #include <cmath>
 #include <algorithm>
+#include <memory>
 
 #include "classes.h" //includes vector
 
 using namespace std;
 
 // Board (object should never be created without a vector)
-Board::Board(Board *p, const vector<vector<int>> &v, const vector<vector<int>> &goal, int calc) {
+Board::Board(shared_ptr<Board> p, const vector<vector<int>> &v, const vector<vector<int>> &goal, int calc) {
     board = v;
 
     if (p == nullptr) {
@@ -24,15 +25,6 @@ Board::Board(Board *p, const vector<vector<int>> &v, const vector<vector<int>> &
     f = h + g;
 }
 
-Board::~Board() {
-    parent = nullptr; delete parent;
-
-    // free children
-    for (unsigned int i = 0; i < children.size(); i++) {
-        children.at(i) = nullptr; delete children.at(i);
-    }
-}
-
 void const Board::getConstants(int &s, int &bN, int &d) {
     // this will be called by the constructor
     s = size;
@@ -42,8 +34,8 @@ void const Board::getConstants(int &s, int &bN, int &d) {
 
 void Board::findPos(const vector<vector<int>> &v, int &pos1, int &pos2, int num) {
     //Find position of number
-    for (int i = 0; i < v.size(); i++) {
-        for (int j = 0; j < v.at(i).size(); j++) {
+    for (unsigned int i = 0; i < v.size(); i++) {
+        for (unsigned int j = 0; j < v.at(i).size(); j++) {
             if (v.at(i).at(j) == num) {
                 pos1 = i;
                 pos2 = j;
@@ -65,7 +57,7 @@ bool Board::isMoveValid(int pos1, int pos2, int move) {
         }
         case (1) : { //down
             // board.at(pos1+1).at(pos2);
-            if (pos1+1 > board.size()-1) return false;
+            if (pos1+1 > (int)board.size()-1) return false;
             else return true;
             break;
         }
@@ -77,7 +69,7 @@ bool Board::isMoveValid(int pos1, int pos2, int move) {
         }
         case (3) : { //right
             // board.at(pos1).at(pos2+1);
-            if (pos2+1 > board.size()-1) return false;
+            if (pos2+1 > (int)board.size()-1) return false;
             else return true;
             break;
         }
@@ -160,8 +152,8 @@ double Board::calculateH(const vector<vector<int>> &v,
             break;
         }
         case 1: { //Mismatched Tile
-            for (int i = 0; i < v.size(); i++) {
-                for (int j = 0; j < v.at(i).size(); j++) {
+            for (unsigned int i = 0; i < v.size(); i++) {
+                for (unsigned int j = 0; j < v.at(i).size(); j++) {
                     if (v.at(i).at(j) != g.at(i).at(j)) total++;
                 }
             }
@@ -188,10 +180,8 @@ double Board::calculateH(const vector<vector<int>> &v,
     return total;
 }
 
-vector<Board*> Board::ASearch(vector<Board*> &knowns, const std::vector<std::vector<int>> &goal, int calc) {
+vector<shared_ptr<Board>> Board::ASearch(vector<shared_ptr<Board>> &knowns, const std::vector<std::vector<int>> &goal, int calc) {
     vector<vector<int>> tempVector = board;
-
-    double hB = calculateH(board, goal, calc);
 
     int pos1, pos2;
     findPos(board, pos1, pos2, blanknum);
@@ -221,19 +211,19 @@ vector<Board*> Board::ASearch(vector<Board*> &knowns, const std::vector<std::vec
     sort(m.begin(), m.end(), compare());
 
     // fill possibleMoves with moves in correct order
-    for (int i = 0; i < m.size(); i++) {
+    for (unsigned int i = 0; i < m.size(); i++) {
         possibleMoves.push_back(m.at(i).move);
     }
 
-    vector<Board*> returnBoards;
+    vector<shared_ptr<Board>> returnBoards;
 
     //iterate over all moves and return all new states
-    for (int i = 0; i < possibleMoves.size(); i++) {
+    for (unsigned int i = 0; i < possibleMoves.size(); i++) {
         vector<vector<int>> temp = move(possibleMoves.at(i));
 
         // check knowns
         bool isKnown = false;
-        for (int i = 0; i < knowns.size(); i++) {
+        for (unsigned int i = 0; i < knowns.size(); i++) {
             if (temp == knowns.at(i)->getVector()) {
                 isKnown = true;
                 break;
@@ -241,24 +231,24 @@ vector<Board*> Board::ASearch(vector<Board*> &knowns, const std::vector<std::vec
         }
 
         // if its unique, push back a new board
-        if (!isKnown) returnBoards.push_back(new Board(this, temp, goal, calc));
+        if (!isKnown) returnBoards.push_back(shared_ptr<Board>(new Board(shared_ptr<Board>(this), temp, goal, calc)));
     }
     
     explored = true;
     return returnBoards;
 }
 
-vector<Board*> Board::ASearchUniform(const std::vector<std::vector<int>> &goal) {
-    vector<Board*> temp;
+vector<shared_ptr<Board>> Board::ASearchUniform(const std::vector<std::vector<int>> &goal) {
+    vector<shared_ptr<Board>> temp;
 
     int pos1, pos2;
     findPos(board, pos1, pos2, blanknum);
 
     // Check possible 4 next states and push all possible ones
-    if (isMoveValid(pos1, pos2, 0)) temp.push_back(new Board(this, move(0), goal, 0)); //Up
-    if (isMoveValid(pos1, pos2, 1)) temp.push_back(new Board(this, move(1), goal, 0)); //Down
-    if (isMoveValid(pos1, pos2, 2)) temp.push_back(new Board(this, move(2), goal, 0)); //Left
-    if (isMoveValid(pos1, pos2, 3)) temp.push_back(new Board(this, move(3), goal, 0)); //Right
+    if (isMoveValid(pos1, pos2, 0)) temp.push_back(shared_ptr<Board>(new Board(shared_ptr<Board>(this), move(0), goal, 0))); //Up
+    if (isMoveValid(pos1, pos2, 1)) temp.push_back(shared_ptr<Board>(new Board(shared_ptr<Board>(this), move(1), goal, 0))); //Down
+    if (isMoveValid(pos1, pos2, 2)) temp.push_back(shared_ptr<Board>(new Board(shared_ptr<Board>(this), move(2), goal, 0))); //Left
+    if (isMoveValid(pos1, pos2, 3)) temp.push_back(shared_ptr<Board>(new Board(shared_ptr<Board>(this), move(3), goal, 0))); //Right
     
     explored = true;
 
@@ -267,12 +257,12 @@ vector<Board*> Board::ASearchUniform(const std::vector<std::vector<int>> &goal) 
 
 void const Board::printBoard() {
     cout << "Explored: " << explored
-         << ", Depth: " << g
+         << ", G(Depth): " << g
          << ", H: " << h
          << ", F:" << f << endl;
         
-    for (int i = 0; i < board.size(); i++) {
-        for (int j = 0; j < board.at(i).size(); j++) {
+    for (unsigned int i = 0; i < board.size(); i++) {
+        for (unsigned int j = 0; j < board.at(i).size(); j++) {
             if (board.at(i).at(j) == 9) cout << "0, ";
             else cout << board.at(i).at(j) << ", ";
         }
@@ -281,8 +271,17 @@ void const Board::printBoard() {
     cout << endl;
 }
 
-void Board::addChildren(vector<Board*> t) {
+void Board::addChildren(vector<shared_ptr<Board>> t) {
     for (unsigned int i = 0; i < t.size(); i++) { 
         children.push_back(t.at(i)); 
+        // t.at(i)->setParent(shared_ptr<Board>(this));
     }
+}
+
+void Board::addSingleChild(std::shared_ptr<Board> t) {
+    children.push_back(t);
+}
+
+void const Board::setParent(shared_ptr<Board> p) {
+    parent = p;
 }

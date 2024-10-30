@@ -54,7 +54,6 @@ void UI::randomBoard() {
 void UI::setBoard(int c) {
     vector<vector<int>> v;
     vector<string> getInput;
-    int cnt = 1;
     int size = 3;
 
     //make sure we're good
@@ -83,17 +82,21 @@ void UI::setBoard(int c) {
     getline(cin, temp);
     getInput.push_back(temp);
     
-    for (unsigned int s = 0; s < size; s++) {
+    for (int s = 0; s < size; s++) {
         vector<int> temp;
+
+        //input of nothing
+        if (getInput.at(s) == "") {
+            quitSequence();
+            return;
+        }
         
         for (unsigned int i = 0; i < getInput.at(s).size(); i++) {
             if (getInput.at(s).at(i) != ' ') {
-                
-
                 // if invalid
                 if (getInput.at(s).at(i) < '0' || 
                     getInput.at(s).at(i) > '8' ||
-                    getInput.at(s).size() < size) 
+                    (int)getInput.at(s).size() < size) 
                     {
                         quitSequence();
                         return;
@@ -108,7 +111,6 @@ void UI::setBoard(int c) {
             }
 
             if (temp.size() >= 3) {
-                cout << endl;
                 v.push_back(temp);
                 break;
             }
@@ -116,7 +118,7 @@ void UI::setBoard(int c) {
     }
 
     // check duplicate numbers
-    for (unsigned int k = 1; k < (size*2)+1; k++) {
+    for (int k = 1; k < (size*2)+1; k++) {
         bool temp = false;
 
         for (unsigned int j = 0; j < v.size(); j++) {
@@ -177,6 +179,7 @@ int UI::setCalc() {
 
 void UI::ASearch() {
     //help me gob
+    cout << "\nSearching ... \n\n";
     int temp = g->ASearch();
     cout << "GOAL!!" 
          << "\n\nThe total amount of nodes expanded were: " << temp 
@@ -184,5 +187,11 @@ void UI::ASearch() {
 }
 
 void UI::printRoute() {
+    cout << "Printing Route to Goal State: \n\n";
+    g->printRoute(); 
+}
+
+void UI::printAllBoards() {
+    cout << "Printing entire Graph: \n\n";
     g->printRoute();
 }

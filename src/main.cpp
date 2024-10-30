@@ -23,9 +23,10 @@ Source for help with using sort() function with structs
 #include <string>
 #include <fstream>
 
-#include "board.cpp"
-#include "graph.cpp"
-#include "ui.cpp"
+// #include "board.cpp"
+// #include "graph.cpp"
+// #include "ui.cpp"
+#include "classes.h"
 
 using namespace std;
 
@@ -41,7 +42,9 @@ int main() {
         ui.ASearch();
         if (ui.getIsComplete()) cont = false;
 
-        ui.printRoute();
+        // ui.printAllBoards();
+
+        // ui.printRoute();
     }
     
 
