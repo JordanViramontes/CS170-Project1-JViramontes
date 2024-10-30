@@ -34,15 +34,12 @@ int main() {
 
     while (true) {
         UI ui;
-        ui.startingSequence();
 
-        if (ui.getIsComplete()) break;
+        if (!ui.startingSequence()) break;
 
         ui.ASearch();
-        if (ui.getIsComplete()) break;
 
-        ui.printRoutesSequence();
-        if (ui.getIsComplete()) break;
+        if (!ui.printRoutesSequence()) break;
     }
     
 

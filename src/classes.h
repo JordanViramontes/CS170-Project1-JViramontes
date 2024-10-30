@@ -57,6 +57,7 @@ class Board {
         int const getDepth() { return g; }
         bool const getExplored() { return explored; }
         void const setParent(std::shared_ptr<Board>);
+        
         // Print
         void const printBoard();
 };
@@ -84,15 +85,15 @@ class Graph {
         int ASearch();
 
         // get
-        int getDepth() { return finalBoard->getDepth() + 1; };
+        int const getDepth() { return finalBoard->getDepth() + 1; };
+        unsigned int const getSize() { return allBoards.size(); }
 };
 
 class UI {
     private:
         Graph* g;
-        bool isComplete = false;
-        void randomBoard();
-        void setBoard(int c);
+        bool randomBoard();
+        bool setBoard(int c);
         int setCalc();
         void quitSequence();
         void printRoute();
@@ -100,9 +101,7 @@ class UI {
 
     public:
         UI() { };
-        void startingSequence();
-        void printRoutesSequence();
+        bool startingSequence();
+        bool printRoutesSequence();
         void ASearch();
-        
-        const bool getIsComplete() { return isComplete; }
 };

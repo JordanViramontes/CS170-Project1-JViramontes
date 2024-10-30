@@ -7,10 +7,9 @@ using namespace std;
 
 void UI::quitSequence() {
     cout << "Quitting...\n\n";
-    isComplete = true;
 }
 
-void UI::startingSequence() {
+bool UI::startingSequence() {
     while(true) {
         cout << "Welcome to 862284516 8 puzzle solver."
             << "\n Type \"1\" to use a default puzzle, \"2\" to enter your own puzzle, or \"q\" to quit:"
@@ -24,18 +23,16 @@ void UI::startingSequence() {
 
         switch (getInput.at(0)) {
             case ('1'): {
-                randomBoard();
-                return;
+                return randomBoard();
                 break;
             }
             case ('2'): {
-                setBoard( setCalc() );
-                return;
+                return setBoard( setCalc() );
                 break;
             }
             case ('q'): {
                 quitSequence();
-                return;
+                return false;
                 break;
             }
             default: {
@@ -47,13 +44,13 @@ void UI::startingSequence() {
 
 }
 
-void UI::randomBoard() {
+bool UI::randomBoard() {
     int c = setCalc();
 
     // check our calc
     if (c < 0) {
         quitSequence();
-        return;
+        return false;
     }
 
     vector<vector<int>> v = {{ 1, 9, 3 }, { 4, 2, 6 }, { 7, 5, 8 }};
@@ -67,27 +64,27 @@ void UI::randomBoard() {
     }
 
     g = new Graph(v, c);
+    return true;
 }
 
-void UI::setBoard(int c) {
-    vector<vector<int>> v;
-    vector<string> getInput;
+bool UI::setBoard(int c) {
     int size = 3;
-    bool flag = true;
 
     //make sure we're good
     if (c < 0) {
         quitSequence();
-        return;
+        return false;
     }
 
-    while(flag) {
+    while(true) {
         bool isInputFine = true;
         cout << "Enter your puzzle with a space between each number, Enter 0 for blank\n";
         cout << "Enter the first row: "
             << "\n\t> ";
         
-        string temp;
+        string temp = "";
+        vector<string> getInput;
+        vector<vector<int>> v;
         getline(cin, temp);
         getInput.push_back(temp);
 
@@ -107,8 +104,9 @@ void UI::setBoard(int c) {
             vector<int> temp;
 
             //input of nothing
-            if (getInput.at(s) == "") {
+            if (getInput.at(s).size() == 0) {
                 isInputFine = false;
+                break;
             }
             
             for (unsigned int i = 0; i < getInput.at(s).size(); i++) {
@@ -119,6 +117,7 @@ void UI::setBoard(int c) {
                         (int)getInput.at(s).size() < size) 
                         {
                             isInputFine = false;
+                            break;
                         }
 
                     // set input 0 -> 9 internally
@@ -135,30 +134,33 @@ void UI::setBoard(int c) {
                 }
             }
         }
-
+        
         // check duplicate numbers
-        for (int k = 1; k < (size*2)+1; k++) {
-            bool temp = false;
+        if (isInputFine) {
+            for (int k = 1; k < (size*2)+1; k++) {
+                bool temp = false;
 
-            for (unsigned int j = 0; j < v.size(); j++) {
-                for (unsigned int i = 0; i < v.at(j).size(); i++) {
-                    if (v.at(i).at(j) == k) {
-                        if (temp) {
-                            isInputFine = false;
+                for (unsigned int j = 0; j < v.size(); j++) {
+                    for (unsigned int i = 0; i < v.at(j).size(); i++) {
+                        if (v.at(i).at(j) == k) {
+                            if (temp) {
+                                isInputFine = false;
+                            }
+                            temp = true;
                         }
-                        temp = true;
                     }
-                }
-            } 
+                } 
+            }
         }
 
-        if (isInputFine) flag = false;
+        if (isInputFine) {
+            g = new Graph(v, c);
+            return true;
+        }
         else {
             cout << "\nInvalid Input, try again\n" << endl;
         }
     }
-
-    g = new Graph(v, c);
 }
 
 int UI::setCalc() {
@@ -201,7 +203,7 @@ int UI::setCalc() {
     }
 }
 
-void UI::printRoutesSequence() {
+bool UI::printRoutesSequence() {
     while(true) {
         cout << "Would you like to print the direct route to the goal, or the full graph?"
             << "\nType:\t\"1\" for the direct route," 
@@ -219,23 +221,23 @@ void UI::printRoutesSequence() {
         switch (getInput.at(0)) {
             case ('1'): {
                 printRoute();
-                return;
+                return true;
                 break;
             }
             case ('2'): {
                 printAllBoards();
-                return;
+                return true;
                 break;
             }
             case ('3'): {
                 printAllBoards();
                 printRoute();
-                return;
+                return true;
                 break;
             }
             case ('q'): {
                 quitSequence();
-                return;
+                return false;
                 break;
             }
             default: {
@@ -252,6 +254,7 @@ void UI::ASearch() {
     int temp = g->ASearch();
     cout << "GOAL!!" 
          << "\n\nThe total amount of nodes expanded were: " << temp 
+         << "\nThe total amount of nodes in the queue were: " << g->getSize()
          << ".\nThe depth of the goal was: " << g->getDepth() << ".\n\n";
 }
 
