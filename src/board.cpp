@@ -278,10 +278,6 @@ void Board::addChildren(vector<shared_ptr<Board>> t) {
     }
 }
 
-void Board::addSingleChild(std::shared_ptr<Board> t) {
-    children.push_back(t);
-}
-
 void const Board::setParent(shared_ptr<Board> p) {
     parent = p;
 }

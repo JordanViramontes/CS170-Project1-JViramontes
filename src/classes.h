@@ -49,7 +49,6 @@ class Board {
         std::vector<std::shared_ptr<Board>> ASearch(std::vector<std::shared_ptr<Board>> &, const std::vector<std::vector<int>> &, int); //Search algorithm, 2nd argument is which type of A search
         std::vector<std::shared_ptr<Board>> ASearchUniform(const std::vector<std::vector<int>> &);
         void addChildren(std::vector<std::shared_ptr<Board>> t);
-        void addSingleChild(std::shared_ptr<Board> t);
 
         // Get
         std::vector<std::vector<int>> const getVector() { return board; }
@@ -85,7 +84,7 @@ class Graph {
         int ASearch();
 
         // get
-        int getDepth() { return finalBoard->getDepth(); };
+        int getDepth() { return finalBoard->getDepth() + 1; };
 };
 
 class UI {
@@ -96,12 +95,14 @@ class UI {
         void setBoard(int c);
         int setCalc();
         void quitSequence();
+        void printRoute();
+        void printAllBoards();
 
     public:
         UI() { };
         void startingSequence();
+        void printRoutesSequence();
         void ASearch();
-        void printRoute();
-        void printAllBoards();
+        
         const bool getIsComplete() { return isComplete; }
 };

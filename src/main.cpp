@@ -31,20 +31,18 @@ Source for help with using sort() function with structs
 using namespace std;
 
 int main() {
-    bool cont = true;
 
-    while (cont) {
+    while (true) {
         UI ui;
         ui.startingSequence();
 
-        if (ui.getIsComplete()) cont = false;
+        if (ui.getIsComplete()) break;
 
         ui.ASearch();
-        if (ui.getIsComplete()) cont = false;
+        if (ui.getIsComplete()) break;
 
-        // ui.printAllBoards();
-
-        // ui.printRoute();
+        ui.printRoutesSequence();
+        if (ui.getIsComplete()) break;
     }
     
 

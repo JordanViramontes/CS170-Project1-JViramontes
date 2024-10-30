@@ -81,72 +81,26 @@ void Graph::ASearch(std::shared_ptr<Board> b, int calc, int g) {
 }
 
 void Graph::ASearchUniform(shared_ptr<Board> b) {
-    //essentially BFS, allBoards already contains the initBoard b
-    unsigned int i = 0; //keep track of q (for bfs)
-    bool flag = true;
-
-    // check initboard
-    if (b->getVector() == goal) {
-        return;
-    }
-
-    while (flag) {
-        // gets all possiblechildren
-        cout << "CURRENT: " << endl;
-        allBoards.at(i)->printBoard();
-        vector<shared_ptr<Board>> temp = allBoards.at(i)->ASearchUniform(goal);
-        
-        // iterate over next moves
-        for (unsigned int j = 0; j < temp.size(); j++) {
-            if (!flag) continue;
-
-            // check for dups
-            cout << "TEST KNOWN FROM TEMP:";
-                temp.at(j)->printBoard();
-            bool knowns = false;
-            for (unsigned int k = 0; k < allBoards.size(); k++) {
-                
-                // if total boards is the same as our current move
-                if (allBoards.at(k)->getVector() == temp.at(j)->getVector()) {
-                    cout << "known!" << endl;
-                    knowns = true;
-                    break;
-                }
-            }
-            cout << "b" << endl;
-
-            // go to next loop if dups found
-            if (knowns) continue;
-
-            // push board to q
-            cout << "TEST: " << endl;
-            temp.at(j)->printBoard();
-
-            // add board to allBoards and set children
-            allBoards.push_back(temp.at(j));
-            // allBoards.at(i)->addSingleChild(temp.at(j));
-
-            // break loop if we've found it
-            if (temp.at(j)->getVector() == goal) {
-                cout << "FOUND IT" << endl;
-                flag = false;          
-            }
+    // iterate over allboards queue (should be infinite until reached goal)
+    for (unsigned int i = 0; i < allBoards.size(); i++) {
+        // check if we've hit our goal
+        if (allBoards.at(i)->getVector() == goal) {
+            finalBoard = allBoards.at(i);
+            return; 
         }
+
+        // get all valid children and add them to graph and allBoards
+        vector<std::shared_ptr<Board>> temp = allBoards.at(i)->ASearch(allBoards, goal, calc);
         
-        cout << "flag: " << flag << endl;
-        i++;
+        allBoards.at(i)->addChildren(temp);
+        for (unsigned int i = 0; i < temp.size(); i++) { 
+            allBoards.push_back(temp.at(i)); 
+        }
     }
-    cout << "? " << endl;
-    return;
 }
 
 int Graph::ASearch() {
-    if (calc == 0) {
-        ASearchUniform(initBoard);
-        cout << "check" << endl;
-        finalBoard = allBoards.at(allBoards.size()-1);
-        cout << "check2" << endl;
-    }
+    if (calc == 0) ASearchUniform(initBoard);
     else ASearch(initBoard, calc, 1);
 
     int expanded = 0;
