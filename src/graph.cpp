@@ -63,13 +63,18 @@ void Graph::ASearch(std::shared_ptr<Board> b, int calc, int g) {
 
     //check all boards for lower f value
     double minf = -1;
-    std::shared_ptr<Board> minBoard = nullptr;
+    std::shared_ptr<Board> minBoard;;
 
     for (unsigned int i = 1; i < allBoards.size(); i++) {
         if (allBoards.at(i)->getExplored()) continue;
         if (minf < 0) {
             minf = allBoards.at(i)->getF();
             minBoard = allBoards.at(i);
+        }
+        if (allBoards.at(i)->getF() == minf) {
+            if (allBoards.at(i)->getDepth() > minBoard->getDepth()) {
+                minBoard = allBoards.at(i);
+            }
         }
         if (allBoards.at(i)->getF() < minf) {
             minf = allBoards.at(i)->getF();
@@ -90,11 +95,16 @@ void Graph::ASearchUniform(shared_ptr<Board> b) {
         }
 
         // get all valid children and add them to graph and allBoards
-        vector<std::shared_ptr<Board>> temp = allBoards.at(i)->ASearch(allBoards, goal, calc);
-        
+        vector<std::shared_ptr<Board>> temp = allBoards.at(i)->ASearchUniform(goal);
         allBoards.at(i)->addChildren(temp);
-        for (unsigned int i = 0; i < temp.size(); i++) { 
-            allBoards.push_back(temp.at(i)); 
+        for (unsigned int i = 0; i < temp.size(); i++) { allBoards.push_back(temp.at(i)); }
+
+        // check children for goal
+        for (unsigned int j = 0; j < temp.size(); j++) {
+            if (temp.at(j)->getVector() == goal) {
+                finalBoard = temp.at(j);
+                return;
+            }
         }
     }
 }

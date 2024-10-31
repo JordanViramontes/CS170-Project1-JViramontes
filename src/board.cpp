@@ -182,14 +182,15 @@ double Board::calculateH(const vector<vector<int>> &v,
 
 vector<shared_ptr<Board>> Board::ASearch(vector<shared_ptr<Board>> &knowns, const std::vector<std::vector<int>> &goal, int calc) {
     vector<vector<int>> tempVector = board;
+    vector<shared_ptr<Board>> returnBoards;
 
     int pos1, pos2;
     findPos(board, pos1, pos2, blanknum);
 
     double hU = blanknum*blanknum, 
-        hD = blanknum*blanknum, 
-        hL = blanknum*blanknum, 
-        hR = blanknum*blanknum;
+           hD = blanknum*blanknum, 
+           hL = blanknum*blanknum, 
+           hR = blanknum*blanknum;
 
     // Check possible 4 next states
     if (isMoveValid(pos1, pos2, 0)) hU = calculateH(move(0), goal, calc); //Up
@@ -202,10 +203,10 @@ vector<shared_ptr<Board>> Board::ASearch(vector<shared_ptr<Board>> &knowns, cons
     vector<moves> m;
 
     // fill moves vector
-    if (hU != 81) m.push_back(moves(hU, 0));
-    if (hD != 81) m.push_back(moves(hD, 1));
-    if (hL != 81) m.push_back(moves(hL, 2));
-    if (hR != 81) m.push_back(moves(hR, 3));
+    if (hU != blanknum*blanknum) m.push_back(moves(hU, 0));
+    if (hD != blanknum*blanknum) m.push_back(moves(hD, 1));
+    if (hL != blanknum*blanknum) m.push_back(moves(hL, 2));
+    if (hR != blanknum*blanknum) m.push_back(moves(hR, 3));
 
     // sort moves vector
     sort(m.begin(), m.end(), compare());
@@ -214,8 +215,6 @@ vector<shared_ptr<Board>> Board::ASearch(vector<shared_ptr<Board>> &knowns, cons
     for (unsigned int i = 0; i < m.size(); i++) {
         possibleMoves.push_back(m.at(i).move);
     }
-
-    vector<shared_ptr<Board>> returnBoards;
 
     //iterate over all moves and return all new states
     for (unsigned int i = 0; i < possibleMoves.size(); i++) {
@@ -239,20 +238,42 @@ vector<shared_ptr<Board>> Board::ASearch(vector<shared_ptr<Board>> &knowns, cons
 }
 
 vector<shared_ptr<Board>> Board::ASearchUniform(const std::vector<std::vector<int>> &goal) {
-    vector<shared_ptr<Board>> temp;
+    vector<shared_ptr<Board>> returnBoards;
 
     int pos1, pos2;
     findPos(board, pos1, pos2, blanknum);
 
     // Check possible 4 next states and push all possible ones
-    if (isMoveValid(pos1, pos2, 0)) temp.push_back(shared_ptr<Board>(new Board(shared_ptr<Board>(this), move(0), goal, 0))); //Up
-    if (isMoveValid(pos1, pos2, 1)) temp.push_back(shared_ptr<Board>(new Board(shared_ptr<Board>(this), move(1), goal, 0))); //Down
-    if (isMoveValid(pos1, pos2, 2)) temp.push_back(shared_ptr<Board>(new Board(shared_ptr<Board>(this), move(2), goal, 0))); //Left
-    if (isMoveValid(pos1, pos2, 3)) temp.push_back(shared_ptr<Board>(new Board(shared_ptr<Board>(this), move(3), goal, 0))); //Right
+    // if (isMoveValid(pos1, pos2, 0)) temp.push_back(shared_ptr<Board>(new Board(shared_ptr<Board>(this), move(0), goal, 0))); //Up
+    // if (isMoveValid(pos1, pos2, 1)) temp.push_back(shared_ptr<Board>(new Board(shared_ptr<Board>(this), move(1), goal, 0))); //Down
+    // if (isMoveValid(pos1, pos2, 2)) temp.push_back(shared_ptr<Board>(new Board(shared_ptr<Board>(this), move(2), goal, 0))); //Left
+    // if (isMoveValid(pos1, pos2, 3)) temp.push_back(shared_ptr<Board>(new Board(shared_ptr<Board>(this), move(3), goal, 0))); //Right
+    
+    vector<double> possibleMoves;
+    if (isMoveValid(pos1, pos2, 0)) possibleMoves.push_back(0); //up
+    if (isMoveValid(pos1, pos2, 1)) possibleMoves.push_back(1); //down
+    if (isMoveValid(pos1, pos2, 2)) possibleMoves.push_back(2); //left
+    if (isMoveValid(pos1, pos2, 3)) possibleMoves.push_back(3); //right
+
+    // check for parent
+    for (unsigned int i = 0; i < possibleMoves.size(); i++) {
+        vector<vector<int>> t = move(possibleMoves.at(i));
+
+        // if parent is null
+        if (parent == nullptr) {
+            returnBoards.push_back(shared_ptr<Board>(new Board(shared_ptr<Board>(this), move(possibleMoves.at(i)), goal, 0)));
+            continue;
+        }
+
+        //check if our move is the same as the parent
+        if (t != parent->getVector()) {
+            returnBoards.push_back(shared_ptr<Board>(new Board(shared_ptr<Board>(this), move(possibleMoves.at(i)), goal, 0)));
+        }
+    }
     
     explored = true;
-
-    return temp;
+    
+    return returnBoards;
 }
 
 void const Board::printBoard() {
